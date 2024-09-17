@@ -60,6 +60,6 @@ export default async function (): Promise<void> {
   const recoveredAccount = "0x0000000000000000000000000000000000000001";
   const accountSalt = ethers.ZeroHash;
 
-  const test = await module.test(recoveredAccount, accountSalt);
-  console.log("test: ", test);
+  const emailAuth = await module.deployEmailAuthProxyTest(recoveredAccount, accountSalt);
+  console.log("emailAuth: ", emailAuth);
 }
