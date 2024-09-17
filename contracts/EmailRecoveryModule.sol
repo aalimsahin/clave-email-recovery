@@ -127,7 +127,7 @@ contract EmailRecoveryModule is
                 L2ContractHelper.computeCreate2Address(
                     address(this),
                     accountSalt,
-                    bytes32(0x01000077dbf74e76183846364176d6a61c2630e371b4acea4c856d76bf919bc9),
+                    bytes32(0x01000079c82404627fc5a2f9658c02f7007f9914bf092673dc6c094fe7ff346b),
                     keccak256(
                         abi.encode(
                             emailAuthImplementation(),
@@ -153,7 +153,7 @@ contract EmailRecoveryModule is
                 DEPLOYER_SYSTEM_CONTRACT.create2,
                 (
                     accountSalt,
-                    0x01000077dbf74e76183846364176d6a61c2630e371b4acea4c856d76bf919bc9,
+                    0x01000079c82404627fc5a2f9658c02f7007f9914bf092673dc6c094fe7ff346b,
                     abi.encode(
                                 emailAuthImplementation(),
                                 abi.encodeCall(

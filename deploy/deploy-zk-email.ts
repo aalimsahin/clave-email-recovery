@@ -1,5 +1,5 @@
 import * as hre from "hardhat";
-import { deployContract, getWallet, getDeployer } from "./utils";
+import { deployContract, getWallet, getDeployer, getContractBytecodeHash } from "./utils";
 import { utils } from "zksync-ethers";
 import { ethers } from "ethers";
 
@@ -14,14 +14,9 @@ export default async function (): Promise<void> {
     "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol:ERC1967Proxy";
   const artifact = await deployer.loadArtifact(proxyArtifactName);
 
-  const bytecodeHash = utils.hashBytecode(artifact.bytecode);
-  const bytes32String =
-    "0x" +
-    Array.from(bytecodeHash)
-      .map((byte) => byte.toString(16).padStart(2, "0"))
-      .join("");
+  const bytecodeHash = getContractBytecodeHash(artifact.bytecode);
 
-  console.log("bytecodehash should be: ", bytes32String);
+  console.log("bytecodehash should be: ", bytecodeHash);
 
   const wallet = getWallet(hre);
   const contractArtifactName = "EmailRecoveryCommandHandler";
@@ -60,6 +55,9 @@ export default async function (): Promise<void> {
   const recoveredAccount = "0x0000000000000000000000000000000000000001";
   const accountSalt = ethers.ZeroHash;
 
-  const emailAuth = await module.deployEmailAuthProxyTest(recoveredAccount, accountSalt);
+  const emailAuth = await module.deployEmailAuthProxyTest(
+    recoveredAccount,
+    accountSalt
+  );
   console.log("emailAuth: ", emailAuth);
 }
