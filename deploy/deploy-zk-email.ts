@@ -1,6 +1,7 @@
 import * as hre from "hardhat";
 import { deployContract, getWallet, getDeployer } from "./utils";
 import { utils } from "zksync-ethers";
+import { ethers } from "ethers";
 
 const factoryAddress = "0xae3c9D26fa525d0Bb119B0b82BBa99C243636f92";
 const verifier = "0xbabFc29e79b4935e1B99515c02354CdA2c2fDA6A";
@@ -55,4 +56,10 @@ export default async function (): Promise<void> {
 
   const moduleAddress = await module.getAddress();
   console.log("Module deployed at:", moduleAddress);
+
+  const recoveredAccount = "0x0000000000000000000000000000000000000001";
+  const accountSalt = ethers.ZeroHash;
+
+  const test = await module.test(recoveredAccount, accountSalt);
+  console.log("test: ", test);
 }
