@@ -1,5 +1,10 @@
 import * as hre from "hardhat";
-import { deployContract, getWallet, getDeployer, getContractBytecodeHash } from "./utils";
+import {
+  deployContract,
+  getWallet,
+  getDeployer,
+  getContractBytecodeHash,
+} from "./utils";
 import { utils } from "zksync-ethers";
 import { ethers } from "ethers";
 
@@ -27,11 +32,19 @@ export default async function (): Promise<void> {
     {
       wallet,
       silent: false,
+      noVerify: true
     }
   );
 
   const commandHandlerAddress = await commandHandler.getAddress();
   console.log("Command handler deployed at:", commandHandlerAddress);
+
+  await deployContract(
+    hre,
+    "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol:ERC1967Proxy",
+    [emailAuthImpl, "0x"]
+  );
+
 
   const module = await deployContract(
     hre,
@@ -46,7 +59,9 @@ export default async function (): Promise<void> {
     {
       wallet,
       silent: false,
-    }
+      noVerify: true
+    },
+    ["0x01000079c82404627fc5a2f9658c02f7007f9914bf092673dc6c094fe7ff346b"]
   );
 
   const moduleAddress = await module.getAddress();
@@ -55,9 +70,12 @@ export default async function (): Promise<void> {
   const recoveredAccount = "0x0000000000000000000000000000000000000001";
   const accountSalt = ethers.ZeroHash;
 
-  const emailAuth = await module.deployEmailAuthProxyTest(
+  const emailAuth = await module.test(
     recoveredAccount,
     accountSalt
   );
   console.log("emailAuth: ", emailAuth);
+
+  const addresses = await module.addresses();
+  console.log("addresses: ", addresses);
 }

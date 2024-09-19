@@ -128,15 +128,7 @@ contract EmailRecoveryModule is
                     address(this),
                     accountSalt,
                     bytes32(0x01000079c82404627fc5a2f9658c02f7007f9914bf092673dc6c094fe7ff346b),
-                    keccak256(
-                        abi.encode(
-                            emailAuthImplementation(),
-                            abi.encodeCall(
-                                EmailAuth.initialize,
-                                (recoveredAccount, accountSalt, address(this))
-                            )
-                        )
-                    )
+                    keccak256(abi.encode(emailAuthImplementation(),""))
                 );
     }
 
@@ -154,24 +146,23 @@ contract EmailRecoveryModule is
                 (
                     accountSalt,
                     0x01000079c82404627fc5a2f9658c02f7007f9914bf092673dc6c094fe7ff346b,
-                    abi.encode(
-                                emailAuthImplementation(),
-                                abi.encodeCall(
-                                    EmailAuth.initialize,
-                                    (
-                                        recoveredAccount,
-                                        accountSalt,
-                                        address(this)
-                                    )
-                                )
-                    )
+                    abi.encode(emailAuthImplementation(),"")
                 )
             )
         );
-        //! require(success, "Failed to deploy email auth proxy");
+        require(success, "Failed to deploy email auth proxy");
         address payable proxyAddress = abi.decode(returnData, (address));
+        EmailAuth guardianEmailAuth = EmailAuth(proxyAddress);
+        // guardianEmailAuth.initialize(
+        //             recoveredAccount,
+        //             accountSalt,
+        //             address(this)
+        // );
         return proxyAddress;
     }
+
+    address a;
+    address b;
 
     function test(
         address recoveredAccount,
@@ -179,7 +170,14 @@ contract EmailRecoveryModule is
     ) public returns (bool) {
         address guardian = computeEmailAuthAddressTest(recoveredAccount, accountSalt);
         address deployed = deployEmailAuthProxyTest(recoveredAccount, accountSalt);
-
+        a = guardian;
+        b = deployed;
         return guardian == deployed;
+    }
+
+
+
+    function addresses() public view returns (address, address) {
+        return (a, b);
     }
 }
