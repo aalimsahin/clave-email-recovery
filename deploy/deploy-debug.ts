@@ -23,7 +23,8 @@ export default async function (): Promise<void> {
     "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol:ERC1967Proxy";
   const artifact = await deployer.loadArtifact(proxyArtifactName);
   const bytecodeHash = getContractBytecodeHash(artifact.bytecode);
-  console.log("bytecodehash should be: ", bytecodeHash);
+
+  console.log("BytecodeHash should be: ", bytecodeHash);
 
   await deployContract(hre, proxyArtifactName, [emailAuthImpl, "0x"], {
     wallet,

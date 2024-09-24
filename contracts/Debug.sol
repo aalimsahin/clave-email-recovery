@@ -38,7 +38,7 @@ contract Debug is EmailRecoveryModule {
                 address(this),
                 accountSalt,
                 bytes32(
-                    0x01000079c82404627fc5a2f9658c02f7007f9914bf092673dc6c094fe7ff346b
+                    0x01000079fe5d47bffb6ad03a28da66955df7842652c6be781d33bbcb757d1f5d
                 ),
                 keccak256(initializationCode)
             );
@@ -58,7 +58,7 @@ contract Debug is EmailRecoveryModule {
                     DEPLOYER_SYSTEM_CONTRACT.create2,
                     (
                         accountSalt,
-                        0x01000079c82404627fc5a2f9658c02f7007f9914bf092673dc6c094fe7ff346b,
+                        0x01000079fe5d47bffb6ad03a28da66955df7842652c6be781d33bbcb757d1f5d,
                         initializationCode
                     )
                 )
