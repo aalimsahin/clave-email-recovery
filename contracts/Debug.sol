@@ -28,9 +28,10 @@ contract Debug is EmailRecoveryModule {
         )
     {}
 
-    function computeEmailAuthAddressWithoutParameters(
+    function computeEmailAuthContractAddress(
         address recoveredAccount,
-        bytes32 accountSalt
+        bytes32 accountSalt,
+        bytes memory initializationCode
     ) public view returns (address) {
         return
             L2ContractHelper.computeCreate2Address(
@@ -39,13 +40,14 @@ contract Debug is EmailRecoveryModule {
                 bytes32(
                     0x01000079c82404627fc5a2f9658c02f7007f9914bf092673dc6c094fe7ff346b
                 ),
-                keccak256(abi.encode(emailAuthImplementation(), ""))
+                keccak256(initializationCode)
             );
     }
 
-    function deployEmailAuthProxyWithoutParameters(
+    function deployEmailAuthProxyContract(
         address recoveredAccount,
-        bytes32 accountSalt
+        bytes32 accountSalt,
+        bytes memory initializationCode
     ) public returns (address) {
         (bool success, bytes memory returnData) = SystemContractsCaller
             .systemCallWithReturndata(
@@ -57,14 +59,40 @@ contract Debug is EmailRecoveryModule {
                     (
                         accountSalt,
                         0x01000079c82404627fc5a2f9658c02f7007f9914bf092673dc6c094fe7ff346b,
-                        abi.encode(emailAuthImplementation(), "")
+                        initializationCode
                     )
                 )
             );
-        require(success, "Failed to deploy email auth proxy without parameters");
+        require(success, "Failed to deploy email auth proxy contract");
         address payable proxyAddress = abi.decode(returnData, (address));
 
         return proxyAddress;
+    }
+
+    function computeEmailAuthAddressWithoutParameters(
+        address recoveredAccount,
+        bytes32 accountSalt
+    ) public view returns (address) {
+        return
+            computeEmailAuthContractAddress(
+                recoveredAccount,
+                accountSalt,
+                //! Only difference is the additional parameters passed to the initialize function
+                abi.encode(emailAuthImplementation(), "")
+            );
+    }
+
+    function deployEmailAuthProxyWithoutParameters(
+        address recoveredAccount,
+        bytes32 accountSalt
+    ) public returns (address) {
+        return
+            deployEmailAuthProxyContract(
+                recoveredAccount,
+                accountSalt,
+                //! Only difference is the additional parameters passed to the initialize function
+                abi.encode(emailAuthImplementation(), "")
+            );
     }
 
     address expectedAddressWithoutParameters;
@@ -100,46 +128,32 @@ contract Debug is EmailRecoveryModule {
         bytes32 accountSalt
     ) public view returns (address) {
         return
-            L2ContractHelper.computeCreate2Address(
-                address(this),
+            computeEmailAuthContractAddress(
+                recoveredAccount,
                 accountSalt,
-                bytes32(
-                    0x01000079c82404627fc5a2f9658c02f7007f9914bf092673dc6c094fe7ff346b
-                ),
-                keccak256(
-                    abi.encodeCall(
-                        EmailAuth.initialize,
-                        (recoveredAccount, accountSalt, address(this))
-                    )
+                //! Only difference is the additional parameters passed to the initialize function
+                abi.encodeCall(
+                    EmailAuth.initialize,
+                    (recoveredAccount, accountSalt, address(this))
                 )
             );
     }
 
+    // TODO: Could not understand why this function is not working
     function deployEmailAuthProxyWithParams(
         address recoveredAccount,
         bytes32 accountSalt
     ) public returns (address) {
-        (bool success, bytes memory returnData) = SystemContractsCaller
-            .systemCallWithReturndata(
-                uint32(gasleft()),
-                address(DEPLOYER_SYSTEM_CONTRACT),
-                uint128(0),
+        return
+            deployEmailAuthProxyContract(
+                recoveredAccount,
+                accountSalt,
+                //! Only difference is the additional parameters passed to the initialize function
                 abi.encodeCall(
-                    DEPLOYER_SYSTEM_CONTRACT.create2,
-                    (
-                        accountSalt,
-                        0x01000079c82404627fc5a2f9658c02f7007f9914bf092673dc6c094fe7ff346b,
-                        abi.encodeCall(
-                            EmailAuth.initialize,
-                            (recoveredAccount, accountSalt, address(this))
-                        )
-                    )
+                    EmailAuth.initialize,
+                    (recoveredAccount, accountSalt, address(this))
                 )
             );
-        require(success, "Failed to deploy email auth proxy with params");
-        address payable proxyAddress = abi.decode(returnData, (address));
-
-        return proxyAddress;
     }
 
     address expectedAddressWithParams;
