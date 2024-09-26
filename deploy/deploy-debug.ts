@@ -54,12 +54,13 @@ export default async function (): Promise<void> {
   console.log("Module deployed at:", moduleAddress);
 
   const recoveredAccount = "0x0000000000000000000000000000000000000001";
-  const accountSalt = ethers.ZeroHash;
+  const accountSalt =
+    "0x0000000000000000000000000000000000000000000000000000000000000123";
 
-  await module.testWithoutParameters(recoveredAccount, accountSalt);
+  await module.test(recoveredAccount, accountSalt);
 
-  const addresses: Array<string> = await module.getAddressesWithoutParameters();
-  const isSameAddressWithoutParams =
+  const addresses: Array<string> = await module.getAddresses();
+  const isSameAddress =
     addresses[0].toLowerCase() === addresses[1].toLowerCase();
 
   console.log(`
@@ -68,38 +69,10 @@ export default async function (): Promise<void> {
 /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 `);
 
-  if (!isSameAddressWithoutParams) {
+  if (!isSameAddress) {
     console.log("expected contract address: ", addresses[0]);
     console.log("deployed contract address: ", addresses[1]);
   } else {
-    console.log("Without Parameters!");
     console.log("Expected and deployed contract addresses are the same!", true);
-  }
-
-  console.log(`
-/*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-/*                    TEST WITH PARAMS                      */
-/*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
-`);
-
-  try {
-    await module.testWithParams(recoveredAccount, accountSalt);
-
-    const addresses: Array<string> = await module.getAddressesWithParams();
-    const isSameAddressWithoutParams =
-      addresses[0].toLowerCase() === addresses[1].toLowerCase();
-
-    if (!isSameAddressWithoutParams) {
-      console.log("expected contract address: ", addresses[0]);
-      console.log("deployed contract address: ", addresses[1]);
-    } else {
-      console.log("With Parameters!");
-      console.log(
-        "Expected and deployed contract addresses are the same!",
-        true
-      );
-    }
-  } catch (e) {
-    console.log("With Parameters: ", e);
   }
 }
