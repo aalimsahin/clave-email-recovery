@@ -64,9 +64,9 @@ export default async function (): Promise<void> {
     addresses[0].toLowerCase() === addresses[1].toLowerCase();
 
   console.log(`
+
 /*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
-/*                    TEST WITHOUT PARAMS                     */
-/*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
+
 `);
 
   if (!isSameAddress) {
@@ -75,4 +75,12 @@ export default async function (): Promise<void> {
   } else {
     console.log("Expected and deployed contract addresses are the same!", true);
   }
+
+  console.log(`
+
+/*´:°•.°+.*•´.*:˚.°*.˚•´.°:°•.°•.*•´.*:˚.°*.˚•´.°:°•.°+.*•´.*:*/
+
+`);
+
+  console.log("Inited Salt: ", addresses[2]);
 }

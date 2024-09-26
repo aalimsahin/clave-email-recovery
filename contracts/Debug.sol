@@ -91,6 +91,7 @@ contract Debug is EmailRecoveryModule {
 
     address expectedAddress;
     address deployedAddress;
+    bytes32 initedSalt;
 
     function test(address recoveredAccount, bytes32 accountSalt) public {
         expectedAddress = computeEmailAuthContractAddress(
@@ -101,9 +102,11 @@ contract Debug is EmailRecoveryModule {
             recoveredAccount,
             accountSalt
         );
+        EmailAuth emailAuth = EmailAuth(deployedAddress);
+        initedSalt = emailAuth.accountSalt();
     }
 
-    function getAddresses() public view returns (address, address) {
-        return (expectedAddress, deployedAddress);
+    function getAddresses() public view returns (address, address, bytes32) {
+        return (expectedAddress, deployedAddress, initedSalt);
     }
 }
