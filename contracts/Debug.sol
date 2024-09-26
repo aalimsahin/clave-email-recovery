@@ -12,6 +12,8 @@ import {SystemContractsCaller} from "@matterlabs/zksync-contracts/l2/system-cont
 /*.•°:°.´+˚.*°.˚:*.´•*.+°.•°:´*.´•*.•°.•°:°.´:•˚°.*°.˚:*.´+°.•*/
 
 contract Debug is EmailRecoveryModule {
+    address emailAuthImpl;
+
     constructor(
         address _verifier,
         address _dkimRegistry,
@@ -26,12 +28,13 @@ contract Debug is EmailRecoveryModule {
             _commandHandler,
             _factoryAddr
         )
-    {}
+    {
+        emailAuthImpl = address(new EmailAuth());
+    }
 
     function computeEmailAuthContractAddress(
         address recoveredAccount,
-        bytes32 accountSalt,
-        bytes memory initializationCode
+        bytes32 accountSalt
     ) public view returns (address) {
         return
             L2ContractHelper.computeCreate2Address(
@@ -40,14 +43,23 @@ contract Debug is EmailRecoveryModule {
                 bytes32(
                     0x01000079fe5d47bffb6ad03a28da66955df7842652c6be781d33bbcb757d1f5d
                 ),
-                keccak256(initializationCode)
+                keccak256(
+                    abi.encode(
+                        emailAuthImpl,
+                        abi.encodeWithSelector(
+                            EmailAuth.initialize.selector,
+                            recoveredAccount,
+                            accountSalt,
+                            address(this)
+                        )
+                    )
+                )
             );
     }
 
     function deployEmailAuthProxyContract(
         address recoveredAccount,
-        bytes32 accountSalt,
-        bytes memory initializationCode
+        bytes32 accountSalt
     ) public returns (address) {
         (bool success, bytes memory returnData) = SystemContractsCaller
             .systemCallWithReturndata(
@@ -59,7 +71,15 @@ contract Debug is EmailRecoveryModule {
                     (
                         accountSalt,
                         0x01000079fe5d47bffb6ad03a28da66955df7842652c6be781d33bbcb757d1f5d,
-                        initializationCode
+                        abi.encode(
+                            emailAuthImpl,
+                            abi.encodeWithSelector(
+                                EmailAuth.initialize.selector,
+                                recoveredAccount,
+                                accountSalt,
+                                address(this)
+                            )
+                        )
                     )
                 )
             );
@@ -69,111 +89,21 @@ contract Debug is EmailRecoveryModule {
         return proxyAddress;
     }
 
-    function computeEmailAuthAddressWithoutParameters(
-        address recoveredAccount,
-        bytes32 accountSalt
-    ) public view returns (address) {
-        return
-            computeEmailAuthContractAddress(
-                recoveredAccount,
-                accountSalt,
-                //! Only difference is the additional parameters passed to the initialize function
-                abi.encode(emailAuthImplementation(), "")
-            );
-    }
+    address expectedAddress;
+    address deployedAddress;
 
-    function deployEmailAuthProxyWithoutParameters(
-        address recoveredAccount,
-        bytes32 accountSalt
-    ) public returns (address) {
-        return
-            deployEmailAuthProxyContract(
-                recoveredAccount,
-                accountSalt,
-                //! Only difference is the additional parameters passed to the initialize function
-                abi.encode(emailAuthImplementation(), "")
-            );
-    }
-
-    address expectedAddressWithoutParameters;
-    address deployedAddressWithoutParameters;
-
-    function testWithoutParameters(
-        address recoveredAccount,
-        bytes32 accountSalt
-    ) public {
-        expectedAddressWithoutParameters = computeEmailAuthAddressWithoutParameters(
+    function test(address recoveredAccount, bytes32 accountSalt) public {
+        expectedAddress = computeEmailAuthContractAddress(
             recoveredAccount,
             accountSalt
         );
-        deployedAddressWithoutParameters = deployEmailAuthProxyWithoutParameters(
+        deployedAddress = deployEmailAuthProxyContract(
             recoveredAccount,
             accountSalt
         );
     }
 
-    function getAddressesWithoutParameters()
-        public
-        view
-        returns (address, address)
-    {
-        return (
-            expectedAddressWithoutParameters,
-            deployedAddressWithoutParameters
-        );
-    }
-
-    function computeEmailAuthAddressWithParams(
-        address recoveredAccount,
-        bytes32 accountSalt
-    ) public view returns (address) {
-        return
-            computeEmailAuthContractAddress(
-                recoveredAccount,
-                accountSalt,
-                //! Only difference is the additional parameters passed to the initialize function
-                abi.encodeCall(
-                    EmailAuth.initialize,
-                    (recoveredAccount, accountSalt, address(this))
-                )
-            );
-    }
-
-    // TODO: Could not understand why this function is not working
-    function deployEmailAuthProxyWithParams(
-        address recoveredAccount,
-        bytes32 accountSalt
-    ) public returns (address) {
-        return
-            deployEmailAuthProxyContract(
-                recoveredAccount,
-                accountSalt,
-                //! Only difference is the additional parameters passed to the initialize function
-                abi.encodeCall(
-                    EmailAuth.initialize,
-                    (recoveredAccount, accountSalt, address(this))
-                )
-            );
-    }
-
-    address expectedAddressWithParams;
-    address deployedAddressWithParams;
-
-    function testWithParams(
-        address recoveredAccount,
-        bytes32 accountSalt
-    ) public {
-        expectedAddressWithParams = computeEmailAuthAddressWithParams(
-            recoveredAccount,
-            accountSalt
-        );
-        deployedAddressWithParams = deployEmailAuthProxyWithParams(
-            recoveredAccount,
-            accountSalt
-        );
-    }
-
-    function getAddressesWithParams() public view returns (address, address) {
-        return (expectedAddressWithParams, deployedAddressWithParams);
+    function getAddresses() public view returns (address, address) {
+        return (expectedAddress, deployedAddress);
     }
 }
