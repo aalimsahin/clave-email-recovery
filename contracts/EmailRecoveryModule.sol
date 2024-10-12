@@ -3,11 +3,15 @@ pragma solidity ^0.8.17;
 
 import {IModule} from "./interfaces/IModule.sol";
 import {IEmailRecoveryModule} from "@zk-email/email-recovery/src/interfaces/IEmailRecoveryModule.sol";
+import {EmailAuth} from "@zk-email/ether-email-auth-contracts/src/EmailAuth.sol";
 import {IClaveAccount} from "./interfaces/IClave.sol";
 import {Errors} from "./libraries/ClaveErrors.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {EmailRecoveryManagerZkSync} from "@zk-email/email-recovery/src/EmailRecoveryManagerZkSync.sol";
 import {GuardianManager} from "@zk-email/email-recovery/src/GuardianManager.sol";
+import {L2ContractHelper} from '@matterlabs/zksync-contracts/l2/contracts/L2ContractHelper.sol';
+import {DEPLOYER_SYSTEM_CONTRACT} from '@matterlabs/zksync-contracts/l2/system-contracts/Constants.sol';
+import {SystemContractsCaller} from '@matterlabs/zksync-contracts/l2/system-contracts/libraries/SystemContractsCaller.sol';
 
 contract EmailRecoveryModule is
     EmailRecoveryManagerZkSync,
